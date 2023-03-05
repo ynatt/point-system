@@ -1,0 +1,22 @@
+type Query {
+    getPayments : [Payment]
+}
+type Mutation {
+    processPayment(prePaymentDetails: PrePaymentDetails!) : Payment!
+}
+
+input PrePaymentDetails {
+    price: String
+    priceModifier: Float
+    paymentMethod : String
+    datetime : String
+}
+
+type Payment {
+    id: ID
+    finalPrice: String
+    points: Int
+    paymentMethod : String
+    datetime : String
+}
+
