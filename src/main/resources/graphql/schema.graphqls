@@ -9,7 +9,7 @@ input PrePaymentDetails {
     price: String
     priceModifier: Float
     paymentMethod : String
-    datetime : String
+    dateTime : String
 }
 
 type Payment {
@@ -17,6 +17,6 @@ type Payment {
     finalPrice: String
     points: Int
     paymentMethod : String
-    datetime : String
+    dateTime(format: String = "yyyy-MM-dd'T'HH:mm:ss'Z'") : String
 }
 

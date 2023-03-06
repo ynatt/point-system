@@ -5,8 +5,9 @@ import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
-import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.graphql.execution.ErrorType.BAD_REQUEST;
 
 @Component
 public class CustomErrorResolver extends DataFetcherExceptionResolverAdapter {
@@ -15,7 +16,13 @@ public class CustomErrorResolver extends DataFetcherExceptionResolverAdapter {
         Throwable cause = NestedExceptionUtils.getMostSpecificCause(ex);
         if(cause instanceof PaymentMethodNotFoundException) {
             return GraphqlErrorBuilder.newError(env)
-                    .errorType(ErrorType.BAD_REQUEST)
+                    .errorType(BAD_REQUEST)
+                    .message(cause.getMessage())
+                    .build();
+        }
+        if(cause instanceof PriceModifierIllegalValueException) {
+            return GraphqlErrorBuilder.newError(env)
+                    .errorType(BAD_REQUEST)
                     .message(cause.getMessage())
                     .build();
         }

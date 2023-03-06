@@ -1,9 +1,10 @@
 package any.mind.pointsystem.entity;
 
+import graphql.schema.DataFetchingEnvironment;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 
 @Data
 public class Payment {
@@ -11,5 +12,11 @@ public class Payment {
     private final String finalPrice;
     private final int points;
     private final String paymentMethod;
-    private final LocalDateTime datetime;
+    private final LocalDateTime dateTime;
+
+
+    public String getDateTime(DataFetchingEnvironment environment) {
+        String format = environment.getArgument("format");
+        return DateTimeFormatter.ofPattern(format).format(dateTime);
+    }
 }

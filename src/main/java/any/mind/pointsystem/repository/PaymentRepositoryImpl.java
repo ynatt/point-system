@@ -27,7 +27,7 @@ public class PaymentRepositoryImpl implements PaymentRepository{
                 payment.getFinalPrice(),
                 payment.getPoints(),
                 payment.getPaymentMethod(),
-                payment.getDatetime()));
+                payment.getDateTime()));
         return payment;
     }
 }

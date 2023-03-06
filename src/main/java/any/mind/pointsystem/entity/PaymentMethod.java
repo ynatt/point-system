@@ -11,5 +11,5 @@ public class PaymentMethod {
 
     private final double priceModifierMin;
 
-    private final double priceModifierMan;
+    private final double priceModifierMax;
 }

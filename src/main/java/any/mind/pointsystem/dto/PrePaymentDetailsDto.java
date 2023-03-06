@@ -13,5 +13,5 @@ public class PrePaymentDetailsDto {
     @NotNull
     private final String paymentMethod;
 
-    private final String datetime;
+    private final String dateTime;
 }

@@ -1,6 +1,7 @@
 package any.mind.pointsystem.service;
 
 import any.mind.pointsystem.controller.exception.PaymentMethodNotFoundException;
+import any.mind.pointsystem.controller.exception.PriceModifierIllegalValueException;
 import any.mind.pointsystem.dto.PrePaymentDetailsDto;
 import any.mind.pointsystem.entity.Payment;
 import any.mind.pointsystem.entity.PaymentMethod;
@@ -34,6 +35,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService{
         if(!paymentMethods.containsKey(prePaymentDetails.getPaymentMethod())) {
             throw new PaymentMethodNotFoundException(String.format("[%s] No such payment method", prePaymentDetails.getPaymentMethod()));
         }
+        PaymentMethod paymentMethod = paymentMethods.get(prePaymentDetails.getPaymentMethod());
+        if(prePaymentDetails.getPriceModifier() < paymentMethod.getPriceModifierMin()
+                || prePaymentDetails.getPriceModifier() > paymentMethod.getPriceModifierMax()) {
+            throw new PriceModifierIllegalValueException(
+                    String.format("Price modifier [%s] is illegal value, should be from [%s] to [%s] range",
+                            prePaymentDetails.getPriceModifier(), paymentMethod.getPriceModifierMin(), paymentMethod.getPriceModifierMax()));
+        }
     }
 
     @Override
@@ -42,6 +50,6 @@ public class PaymentMethodServiceImpl implements PaymentMethodService{
         int points = (int) (Double.parseDouble(prePaymentDetails.getPrice()) *
                 paymentMethods.get(prePaymentDetails.getPaymentMethod()).getPointsModifier());
         return new Payment(null, String.valueOf(finalPrice), points, prePaymentDetails.getPaymentMethod(),
-                LocalDateTime.parse(prePaymentDetails.getDatetime(), DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC.normalized())));
+                LocalDateTime.parse(prePaymentDetails.getDateTime(), DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC.normalized())));
     }
 }
