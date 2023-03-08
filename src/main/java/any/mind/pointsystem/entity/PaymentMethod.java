@@ -1,15 +1,30 @@
 package any.mind.pointsystem.entity;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "PAYMENT_METHOD")
 public class PaymentMethod {
 
-    private final String name;
+    @Id
+    private String name;
 
-    private final double pointsModifier;
+    @Column(name = "POINTS_MODIFIER")
+    private double pointsModifier;
 
-    private final double priceModifierMin;
+    @Column(name = "PRICE_MODIFIER_MIN")
+    private double priceModifierMin;
 
-    private final double priceModifierMax;
+    @Column(name = "PRICE_MODIFIER_MAX")
+    private double priceModifierMax;
 }

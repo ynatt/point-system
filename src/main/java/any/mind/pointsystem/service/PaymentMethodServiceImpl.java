@@ -5,37 +5,47 @@ import any.mind.pointsystem.controller.exception.PriceModifierIllegalValueExcept
 import any.mind.pointsystem.dto.PrePaymentDetailsDto;
 import any.mind.pointsystem.entity.Payment;
 import any.mind.pointsystem.entity.PaymentMethod;
+import any.mind.pointsystem.repository.PaymentMethodRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+
 @Service
+@RequiredArgsConstructor
 public class PaymentMethodServiceImpl implements PaymentMethodService{
 
-    private final Map<String, PaymentMethod> paymentMethods = new HashMap<>(){{
-        put("CASH", new PaymentMethod("CASH", 0.05, 0.9, 1));
-        put("CASH_ON_DELIVERY", new PaymentMethod("CASH_ON_DELIVERY", 0.05, 1, 1.02));
-        put("VISA", new PaymentMethod("VISA", 0.03, 0.95, 1));
-        put("MASTERCARD", new PaymentMethod("MASTERCARD", 0.03, 0.95, 1));
-        put("AMEX", new PaymentMethod("AMEX", 0.02, 0.98, 1.01));
-        put("JCB", new PaymentMethod("JCB", 0.05, 0.95, 1));
-    }};
+    private final PaymentMethodRepository paymentMethodRepository;
+
+    private Map<String, PaymentMethod> paymentMethods;
+
+    private void initPayments() {
+        paymentMethods = new HashMap<>();
+        List<PaymentMethod> paymentMethodList = paymentMethodRepository.findAll();
+        paymentMethodList.forEach(paymentMethod -> paymentMethods.put(paymentMethod.getName(), paymentMethod));
+    }
 
     @Override
     public Map<String, PaymentMethod> paymentMethods() {
+        if (isNull(paymentMethods)) {
+            initPayments();
+        }
         return paymentMethods;
     }
 
     @Override
     public void validate(PrePaymentDetailsDto prePaymentDetails) throws PaymentMethodNotFoundException {
-        if(!paymentMethods.containsKey(prePaymentDetails.getPaymentMethod())) {
+        if(!paymentMethods().containsKey(prePaymentDetails.getPaymentMethod())) {
             throw new PaymentMethodNotFoundException(String.format("[%s] No such payment method", prePaymentDetails.getPaymentMethod()));
         }
-        PaymentMethod paymentMethod = paymentMethods.get(prePaymentDetails.getPaymentMethod());
+        PaymentMethod paymentMethod = paymentMethods().get(prePaymentDetails.getPaymentMethod());
         if(prePaymentDetails.getPriceModifier() < paymentMethod.getPriceModifierMin()
                 || prePaymentDetails.getPriceModifier() > paymentMethod.getPriceModifierMax()) {
             throw new PriceModifierIllegalValueException(
@@ -48,7 +58,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService{
     public Payment process(PrePaymentDetailsDto prePaymentDetails) {
         double finalPrice = Double.parseDouble(prePaymentDetails.getPrice()) * prePaymentDetails.getPriceModifier();
         int points = (int) (Double.parseDouble(prePaymentDetails.getPrice()) *
-                paymentMethods.get(prePaymentDetails.getPaymentMethod()).getPointsModifier());
+                paymentMethods().get(prePaymentDetails.getPaymentMethod()).getPointsModifier());
         return new Payment(null, String.valueOf(finalPrice), points, prePaymentDetails.getPaymentMethod(),
                 LocalDateTime.parse(prePaymentDetails.getDateTime(), DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC.normalized())));
     }

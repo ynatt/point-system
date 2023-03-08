@@ -1,12 +1,14 @@
 package any.mind.pointsystem.repository;
 
 import any.mind.pointsystem.entity.Payment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-public interface PaymentRepository {
+@Repository
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    List<Payment> getAllPayments();
-
-    Payment save(Payment payment);
+    List<Payment> findAllByDateTimeGreaterThanEqualAndDateTimeLessThan(LocalDateTime start, LocalDateTime end);
 }

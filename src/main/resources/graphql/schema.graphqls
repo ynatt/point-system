@@ -1,5 +1,6 @@
 type Query {
     getPayments : [Payment]
+    salesByHour(startDateTime : String!, endDateTime: String!): [SaleDto]
 }
 type Mutation {
     processPayment(prePaymentDetails: PrePaymentDetails!) : Payment!
@@ -9,6 +10,12 @@ input PrePaymentDetails {
     price: String
     priceModifier: Float
     paymentMethod : String
+    dateTime : String
+}
+
+type SaleDto {
+    sales: String
+    points: String
     dateTime : String
 }
 
