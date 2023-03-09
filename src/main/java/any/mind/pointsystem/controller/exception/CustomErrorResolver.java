@@ -14,13 +14,8 @@ public class CustomErrorResolver extends DataFetcherExceptionResolverAdapter {
     @Override
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
         Throwable cause = NestedExceptionUtils.getMostSpecificCause(ex);
-        if(cause instanceof PaymentMethodNotFoundException) {
-            return GraphqlErrorBuilder.newError(env)
-                    .errorType(BAD_REQUEST)
-                    .message(cause.getMessage())
-                    .build();
-        }
-        if(cause instanceof PriceModifierIllegalValueException) {
+        if(cause instanceof PaymentMethodNotFoundException || cause instanceof PriceModifierIllegalValueException
+                || cause instanceof PriceIllegalValueException) {
             return GraphqlErrorBuilder.newError(env)
                     .errorType(BAD_REQUEST)
                     .message(cause.getMessage())

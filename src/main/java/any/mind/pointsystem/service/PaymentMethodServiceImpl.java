@@ -1,5 +1,7 @@
 package any.mind.pointsystem.service;
 
+import any.mind.pointsystem.DateHelper;
+import any.mind.pointsystem.controller.exception.PriceIllegalValueException;
 import any.mind.pointsystem.controller.exception.PaymentMethodNotFoundException;
 import any.mind.pointsystem.controller.exception.PriceModifierIllegalValueException;
 import any.mind.pointsystem.dto.PrePaymentDetailsDto;
@@ -9,13 +11,12 @@ import any.mind.pointsystem.repository.PaymentMethodRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static any.mind.pointsystem.DateHelper.DATE_ISO_INSTANT_UTC;
 import static java.util.Objects.isNull;
 
 @Service
@@ -41,9 +42,16 @@ public class PaymentMethodServiceImpl implements PaymentMethodService{
     }
 
     @Override
-    public void validate(PrePaymentDetailsDto prePaymentDetails) throws PaymentMethodNotFoundException {
+    public void validate(PrePaymentDetailsDto prePaymentDetails) throws RuntimeException {
         if(!paymentMethods().containsKey(prePaymentDetails.getPaymentMethod())) {
             throw new PaymentMethodNotFoundException(String.format("[%s] No such payment method", prePaymentDetails.getPaymentMethod()));
+        }
+        try {
+            if (new BigDecimal(prePaymentDetails.getPrice()).compareTo(BigDecimal.ZERO) < 0) {
+                throw new PriceIllegalValueException("Price is less than 0");
+            }
+        } catch (NumberFormatException e) {
+            throw new PriceIllegalValueException("Illegal format of price, not a decimal");
         }
         PaymentMethod paymentMethod = paymentMethods().get(prePaymentDetails.getPaymentMethod());
         if(prePaymentDetails.getPriceModifier() < paymentMethod.getPriceModifierMin()
@@ -56,10 +64,16 @@ public class PaymentMethodServiceImpl implements PaymentMethodService{
 
     @Override
     public Payment process(PrePaymentDetailsDto prePaymentDetails) {
-        double finalPrice = Double.parseDouble(prePaymentDetails.getPrice()) * prePaymentDetails.getPriceModifier();
-        int points = (int) (Double.parseDouble(prePaymentDetails.getPrice()) *
-                paymentMethods().get(prePaymentDetails.getPaymentMethod()).getPointsModifier());
-        return new Payment(null, String.valueOf(finalPrice), points, prePaymentDetails.getPaymentMethod(),
-                LocalDateTime.parse(prePaymentDetails.getDateTime(), DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC.normalized())));
+        BigDecimal price = new BigDecimal(prePaymentDetails.getPrice());
+        BigDecimal finalPrice = price.multiply(BigDecimal.valueOf(prePaymentDetails.getPriceModifier()));
+        int points = price.multiply(
+                BigDecimal.valueOf(paymentMethods().get(prePaymentDetails.getPaymentMethod()).getPointsModifier()))
+                .intValue();
+        return Payment.builder()
+                .finalPrice(finalPrice.toString())
+                .points(points)
+                .paymentMethod(prePaymentDetails.getPaymentMethod())
+                .dateTime(DateHelper.toLocalDate(prePaymentDetails.getDateTime(), DATE_ISO_INSTANT_UTC))
+                .build();
     }
 }

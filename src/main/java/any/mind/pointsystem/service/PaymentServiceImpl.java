@@ -1,5 +1,6 @@
 package any.mind.pointsystem.service;
 
+import any.mind.pointsystem.DateHelper;
 import any.mind.pointsystem.dto.ApiMapper;
 import any.mind.pointsystem.dto.PaymentDto;
 import any.mind.pointsystem.dto.PrePaymentDetailsDto;
@@ -10,10 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+
+import static any.mind.pointsystem.DateHelper.DATE_ISO_INSTANT_UTC;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService{
         while(start.isBefore(endDateTime)) {
             end = start.plus(1, ChronoUnit.HOURS).isBefore(endDateTime) ? start.plus(1, ChronoUnit.HOURS) : endDateTime;
             saleDto = new SaleDto();
-            saleDto.setDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(start));
+            saleDto.setDateTime(DateHelper.toFormattedDate(start, DATE_ISO_INSTANT_UTC));
             for(Payment payment : paymentRepository.findAllByDateTimeGreaterThanEqualAndDateTimeLessThan(start, end)) {
                 addPriceAndPoints(payment, saleDto);
             }

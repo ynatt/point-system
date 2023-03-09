@@ -1,12 +1,10 @@
 package any.mind.pointsystem.entity;
 
-import graphql.schema.DataFetchingEnvironment;
 import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Getter
@@ -14,6 +12,7 @@ import java.util.Objects;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "PAYMENT")
 public class Payment {
@@ -31,12 +30,6 @@ public class Payment {
 
     @Column(name = "DATE_TIME")
     private LocalDateTime dateTime;
-
-
-    public String getDateTime(DataFetchingEnvironment environment) {
-        String format = environment.getArgument("format");
-        return DateTimeFormatter.ofPattern(format).format(dateTime);
-    }
 
     @Override
     public boolean equals(Object o) {
